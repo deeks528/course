@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, BookOpen, Filter } from 'lucide-react';
-import { lectures } from '../data/lectures';
+import { lectures_part1 } from '../data/lectures_part1';
+import { lectures_part2 } from '../data/lectures_part2';
 
 const LecturesPage = () => {
   const [activeUnit, setActiveUnit] = useState(0); // 0 means all units
@@ -15,9 +16,10 @@ const LecturesPage = () => {
     { id: 5, name: 'Unit V: DevOps with Cloud' }
   ];
   
+  const allLectures = [...lectures_part1, ...lectures_part2];
   const filteredLectures = activeUnit === 0 
-    ? lectures 
-    : lectures.filter(lecture => lecture.unit === activeUnit);
+    ? allLectures 
+    : allLectures.filter(lecture => lecture.unit === activeUnit);
   
   return (
     <div className="fade-in">
@@ -51,7 +53,10 @@ const LecturesPage = () => {
           <div key={lecture.id} className="lecture-card slide-in">
             <div className="flex justify-between items-start">
               <div>
-                <div className="tag tag-blue">Unit {lecture.unit}</div>
+                <div className="flex gap-2 mb-4">
+                  <div className="tag tag-blue">Unit {lecture.unit}</div>
+                  <div className="tag tag-blue">Part {lecture.part}</div>
+                </div>
                 <h2 className="text-xl font-semibold text-blue-700 mb-2">{lecture.title}</h2>
                 <p className="text-gray-600 mb-4">{lecture.description}</p>
                 

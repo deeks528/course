@@ -1,10 +1,92 @@
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, BookOpen } from 'lucide-react';
-import { lectures } from '../data/lectures';
+import { lectures_part1 } from '../data/lectures_part1';
+import { lectures_part2 } from '../data/lectures_part2';
+
+// Helper to recursively render content
+const RenderContent = ({ data, level = 0 }) => {
+  if (typeof data === 'string' || typeof data === 'number') {
+    return <div className={`ml-${level * 4} mb-2`}>{data}</div>;
+  }
+  if (Array.isArray(data)) {
+    return (
+      <ul className={`ml-${level * 4} list-disc`}>
+        {data.map((item, idx) => (
+          <li key={idx}>
+            <RenderContent data={item} level={level + 1} />
+          </li>
+        ))}
+      </ul>
+    );
+  }
+  if (typeof data === 'object' && data !== null) {
+    return (
+      <div className={`ml-${level * 4} mb-2`}>
+        {Object.entries(data).map(([key, value], idx) => (
+          <div key={idx} className="mb-2">
+            <strong className="capitalize">{key.replace(/([A-Z])/g, ' $1')}:</strong>
+            <RenderContent data={value} level={level + 1} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
+// Add the SectionedContent component above the LectureDetailPage component
+const SectionedContent = ({ content }) => {
+  if (!content) return null;
+
+  return (
+    <div className="space-y-8">
+      {Object.entries(content).map(([sectionKey, sectionValue], idx) => (
+        <div key={idx}>
+          <h3 className="text-xl font-bold text-blue-700 mb-2 capitalize">
+            {sectionKey.replace(/([A-Z])/g, ' $1')}
+          </h3>
+          <SectionContent value={sectionValue} />
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const SectionContent = ({ value }) => {
+  if (typeof value === 'string' || typeof value === 'number') {
+    return <p className="mb-2 text-gray-700">{value}</p>;
+  }
+  if (Array.isArray(value)) {
+    return (
+      <ul className="list-disc ml-6 space-y-1">
+        {value.map((item, idx) => (
+          <li key={idx}>
+            <SectionContent value={item} />
+          </li>
+        ))}
+      </ul>
+    );
+  }
+  if (typeof value === 'object' && value !== null) {
+    return (
+      <div className="ml-4 space-y-2">
+        {Object.entries(value).map(([k, v], idx) => (
+          <div key={idx}>
+            <span className="font-semibold capitalize">{k.replace(/([A-Z])/g, ' $1')}: </span>
+            <SectionContent value={v} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
 
 const LectureDetailPage = () => {
   const { id } = useParams();
-  const lecture = lectures.find(lecture => lecture.id === id);
+  const allLectures = [...lectures_part1, ...lectures_part2];
+  const lecture = allLectures.find(lecture => lecture.id === id);
+  const currentIndex = allLectures.findIndex(l => l.id === id);
   
   if (!lecture) {
     return (
@@ -28,12 +110,17 @@ const LectureDetailPage = () => {
       
       <div className="bg-white rounded-lg shadow-md p-6 mb-8 border-t-4 border-blue-600">
         <div className="tag tag-blue mb-4">Unit {lecture.unit}</div>
+        <div className="tag tag-blue mb-4">Part {lecture.part}</div>
         <h1 className="text-3xl font-bold text-blue-800 mb-4">{lecture.title}</h1>
         <p className="text-gray-700 text-lg mb-6">{lecture.description}</p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-2">
+          <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+            <h2 className="text-2xl font-semibold text-blue-700 mb-4">Lecture Content</h2>
+            <SectionedContent content={lecture.content} />
+          </div>
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
             <h2 className="text-2xl font-semibold text-blue-700 mb-4">Topics Covered</h2>
             <ul className="space-y-3">
@@ -98,9 +185,9 @@ const LectureDetailPage = () => {
       </div>
       
       <div className="mt-8 flex justify-between">
-        {lectures.findIndex(l => l.id === id) > 0 ? (
+        {currentIndex > 0 ? (
           <Link 
-            to={`/lectures/${lectures[lectures.findIndex(l => l.id === id) - 1].id}`}
+            to={`/lectures/${allLectures[currentIndex - 1].id}`}
             className="btn btn-outline"
           >
             Previous Lecture
@@ -109,9 +196,9 @@ const LectureDetailPage = () => {
           <div></div>
         )}
         
-        {lectures.findIndex(l => l.id === id) < lectures.length - 1 ? (
+        {currentIndex < allLectures.length - 1 ? (
           <Link 
-            to={`/lectures/${lectures[lectures.findIndex(l => l.id === id) + 1].id}`}
+            to={`/lectures/${allLectures[currentIndex + 1].id}`}
             className="btn btn-primary"
           >
             Next Lecture
