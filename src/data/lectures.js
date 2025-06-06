@@ -207,5 +207,4 @@ export const lectures = [
       "Strategy trends focus on organizational and process changes, while technology trends focus on tools and techniques"
     ]
   }
-];
-
+]; 
